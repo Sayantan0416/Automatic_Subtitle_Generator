@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SubtitleAI — Automatic Subtitle Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+
+  <!-- ── Ambient background orbs ── -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <!-- ── Noise grain overlay ── -->
+  <div class="grain"></div>
+
+  <!-- ══════════ HEADER ══════════ -->
+  <header class="header">
+    <div class="logo">
+      <span class="logo-icon">◈</span>
+      <span class="logo-text">Subtitle<em>AI</em></span>
+    </div>
+    <nav class="nav-pills">
+      <span class="pill active">Generator</span>
+      <span class="pill">Docs</span>
+      <span class="pill">API</span>
+    </nav>
+    <div class="header-cta">
+      <span class="badge">Beta</span>
+    </div>
+  </header>
+
+  <!-- ══════════ HERO ══════════ -->
+  <section class="hero">
+    <p class="hero-eyebrow">AI-Powered Speech Recognition</p>
+    <h1 class="hero-title">
+      Turn Audio Into<br/>
+      <span class="gradient-text">Subtitles.</span>
+    </h1>
+    <p class="hero-sub">
+      Upload any audio file — MP3, WAV, M4A — and get a perfectly
+      timestamped <code>.srt</code> subtitle file in seconds.
+    </p>
+  </section>
+
+  <!-- ══════════ MAIN CARD ══════════ -->
+  <main class="main-card">
+
+    <!-- ── Step 1: Upload zone ── -->
+    <section class="panel upload-panel" id="uploadPanel">
+      <div class="panel-header">
+        <span class="step-badge">01</span>
+        <h2>Drop Your Audio</h2>
+      </div>
+
+      <div class="drop-zone" id="dropZone">
+        <input type="file" id="fileInput" accept=".mp3,.wav,.m4a,.ogg,.flac" hidden />
+        <div class="drop-icon">
+          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3"/>
+            <path d="M32 44V20M22 30l10-10 10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <p class="drop-primary">Drag &amp; drop audio here</p>
+        <p class="drop-secondary">or <button class="link-btn" id="browseBtn">browse files</button></p>
+        <div class="drop-formats">
+          <span>MP3</span><span>WAV</span><span>M4A</span><span>OGG</span><span>FLAC</span>
+        </div>
+      </div>
+
+      <!-- Audio preview -->
+      <div class="audio-preview hidden" id="audioPreview">
+        <div class="audio-meta">
+          <div class="audio-icon">🎵</div>
+          <div class="audio-info">
+            <p class="audio-name" id="audioName">filename.mp3</p>
+            <p class="audio-size" id="audioSize">0 KB</p>
+          </div>
+          <button class="clear-btn" id="clearBtn" title="Remove file">✕</button>
+        </div>
+        <!-- Native HTML audio player for waveform preview -->
+        <audio id="audioPlayer" controls class="audio-player"></audio>
+
+        <!-- Animated frequency bars (decorative) -->
+        <div class="waveform-bars" id="waveformBars">
+          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+          <div class="bar"></div><div class="bar"></div>
+        </div>
+      </div>
+
+      <button class="generate-btn hidden" id="generateBtn">
+        <span class="btn-text">Generate Subtitles</span>
+        <span class="btn-icon">→</span>
+      </button>
+    </section>
+
+    <!-- ── Step 2: Progress ── -->
+    <section class="panel progress-panel hidden" id="progressPanel">
+      <div class="panel-header">
+        <span class="step-badge">02</span>
+        <h2>Processing Audio</h2>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <span class="progress-pct" id="progressPct">0%</span>
+      </div>
+
+      <div class="progress-steps">
+        <div class="pstep" id="pstep1"><span class="pstep-dot"></span>Uploading file</div>
+        <div class="pstep" id="pstep2"><span class="pstep-dot"></span>Converting audio</div>
+        <div class="pstep" id="pstep3"><span class="pstep-dot"></span>Recognizing speech</div>
+        <div class="pstep" id="pstep4"><span class="pstep-dot"></span>Building subtitles</div>
+      </div>
+
+      <div class="processing-animation">
+        <div class="pulse-ring"></div>
+        <div class="pulse-ring delay-1"></div>
+        <div class="pulse-ring delay-2"></div>
+        <span class="pulse-icon">◈</span>
+      </div>
+    </section>
+
+    <!-- ── Step 3: Results ── -->
+    <section class="panel results-panel hidden" id="resultsPanel">
+      <div class="panel-header">
+        <span class="step-badge success">03</span>
+        <h2>Subtitles Ready</h2>
+        <div class="results-actions">
+          <button class="action-btn secondary" id="newFileBtn">New File</button>
+          <button class="action-btn primary" id="downloadBtn">
+            <span>⬇</span> Download .srt
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats row -->
+      <div class="stats-row" id="statsRow"></div>
+
+      <!-- Subtitle preview -->
+      <div class="subtitle-preview" id="subtitlePreview">
+        <div class="preview-header">
+          <span class="preview-label">Subtitle Preview</span>
+          <button class="copy-btn" id="copyBtn" title="Copy SRT content">Copy</button>
+        </div>
+        <div class="subtitle-list" id="subtitleList"></div>
+      </div>
+
+      <!-- Raw SRT (collapsible) -->
+      <details class="srt-raw">
+        <summary>View raw SRT file</summary>
+        <pre id="srtRaw" class="srt-code"></pre>
+      </details>
+    </section>
+
+    <!-- ── Error panel ── -->
+    <div class="error-toast hidden" id="errorToast">
+      <span class="error-icon">⚠</span>
+      <span id="errorMsg">Something went wrong.</span>
+      <button id="errorClose">✕</button>
+    </div>
+
+  </main>
+
+  <!-- ══════════ FEATURES STRIP ══════════ -->
+  <section class="features">
+    <div class="feature">
+      <span class="f-icon">⚡</span>
+      <span class="f-label">Fast Processing</span>
+    </div>
+    <div class="feature">
+      <span class="f-icon">🌐</span>
+      <span class="f-label">40+ Languages</span>
+    </div>
+    <div class="feature">
+      <span class="f-icon">🔒</span>
+      <span class="f-label">Files Auto-Deleted</span>
+    </div>
+    <div class="feature">
+      <span class="f-icon">📄</span>
+      <span class="f-label">SRT / VTT Export</span>
+    </div>
+  </section>
+
+  <!-- ══════════ FOOTER ══════════ -->
+  <footer class="footer">
+    <p>SubtitleAI &mdash; Open-source subtitle generation &middot; Built with Flask &amp; SpeechRecognition</p>
+  </footer>
+
+  <script src="/static/js/script.js"></script>
+</body>
+</html>
